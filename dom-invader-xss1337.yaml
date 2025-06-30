@@ -1,0 +1,86 @@
+id: dom-invader-xss
+
+info:
+  name: DOM Invader - Cross-Site Scripting Detection
+  author: geeknik, enhanced by magsec1337
+  severity: high
+  description: Detects possible DOM-based XSS vulnerabilities via tainted sources reaching dangerous sinks.
+  reference:
+    - https://portswigger.net/blog/introducing-dom-invader
+    - https://owasp.org/www-community/xss/#dom-based-xss
+  classification:
+    cvss-metrics: CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:L/A:N
+    cvss-score: 7.2
+    cwe-id: CWE-79
+  tags: xss,dom,file
+
+file:
+  - extensions:
+      - js
+      - ts
+      - jsx
+      - tsx
+      - html
+      - htm
+      - php
+      - cs
+      - rb
+      - py
+      - vue
+
+    extractors:
+      - type: regex
+        name: source
+        part: body
+        regex:
+          - 'location(\.href|\.hash|\.search|\.pathname)?'
+          - 'document(\.URL|\.documentURI|\.baseURI|\.referrer|\.cookie)'
+          - 'window\.name'
+          - 'history\.state'
+          - 'localStorage(\.getItem|\.key)?'
+          - 'sessionStorage(\.getItem|\.key)?'
+          - 'this\.location'
+          - 'new URLSearchParams\(.*location\.search.*\)'
+
+      - type: regex
+        name: sink
+        part: body
+        regex:
+          - '\.innerHTML\s*='
+          - '\.outerHTML\s*='
+          - '\.html\s*\('
+          - '\.append\s*\('
+          - '\.prepend\s*\('
+          - '\.write\s*\('
+          - '\.writeln\s*\('
+          - 'setTimeout\s*\('
+          - 'setInterval\s*\('
+          - 'eval\s*\('
+          - 'Function\s*\('
+          - 'document\.createElement\s*\(\s*["\']script["\']\s*\)'
+          - 'createContextualFragment\s*\('
+          - '\.src\s*='
+          - '\.href\s*='
+          - '\.action\s*='
+          - '\.formAction\s*='
+          - '\.setAttribute\s*\(\s*["\']on.*["\']'
+          - '\.addEventListener\s*\(\s*["\'].*["\']'
+
+    matchers:
+      - type: regex
+        name: source
+        part: body
+        regex:
+          - 'location(\.href|\.search|\.hash|\.pathname)?'
+          - 'document(\.URL|\.referrer|\.documentURI|\.baseURI)'
+          - 'window\.name'
+
+      - type: regex
+        name: sink
+        part: body
+        regex:
+          - '\.innerHTML\s*='
+          - 'eval\s*\('
+          - 'document\.write\s*\('
+
+    matchers-condition: and
