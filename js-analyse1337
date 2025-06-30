@@ -1,0 +1,111 @@
+id: js-analyse
+
+info:
+  name: JavaScript Sensitive Data Analyzer
+  author: ayadim, enhanced by magsec1337
+  severity: info
+  description: |
+    Extracts potentially sensitive information from JavaScript files including API keys, tokens, endpoints, and more. Useful for bug bounty and appsec review.
+  metadata:
+    verified: true
+  tags: file,js,analysis,secrets,endpoints,bugbounty
+
+file:
+  - extensions:
+      - js
+      - jsx
+      - ts
+      - tsx
+
+    extractors:
+
+      # Tokens, Secrets, API Keys
+      - type: regex
+        name: generic-api-token
+        regex:
+          - '(?i)(key|password|passwd|pass|pwd|private|credential|auth|cred|creds|secret|token|access)[\s"']*[:=][\s"']*([a-z0-9\-_.=]{8,})'
+
+      - type: regex
+        name: jwt-token
+        regex:
+          - 'eyJ[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+'
+
+      - type: regex
+        name: amazon-access-key
+        regex:
+          - 'AKIA[0-9A-Z]{16}'
+
+      - type: regex
+        name: slack-token
+        regex:
+          - 'xox[baprs]-([0-9a-zA-Z]{10,48})'
+
+      - type: regex
+        name: stripe-api-key
+        regex:
+          - 'sk_live_[0-9a-zA-Z]{24,}'
+
+      - type: regex
+        name: github-tokens
+        regex:
+          - 'gh[pousr]_[A-Za-z0-9]{36,82}'
+
+      - type: regex
+        name: google-api-key
+        regex:
+          - 'AIza[0-9A-Za-z\\-_]{35}'
+
+      # Endpoint, URL, Path
+      - type: regex
+        name: endpoint-uri
+        regex:
+          - '["'`](\/[a-zA-Z0-9\/._-]+)["'`]'
+
+      - type: regex
+        name: full-url
+        regex:
+          - 'https?:\/\/[a-z0-9\-._~:\/?#\[\]@!$&\'()*+,;=.%]+'
+
+      - type: regex
+        name: s3-bucket-url
+        regex:
+          - '[a-z0-9.-]+\.s3[-a-z0-9]*\.amazonaws\.com'
+
+      # Credentials, Auth
+      - type: regex
+        name: auth-bearer
+        regex:
+          - '(?i)Authorization:\s?Bearer\s[0-9a-zA-Z\-._~+/=]+'
+
+      - type: regex
+        name: auth-basic
+        regex:
+          - '(?i)Authorization:\s?Basic\s[0-9a-zA-Z\-._~+/=]+'
+
+      # SSH, RSA, Keys
+      - type: regex
+        name: rsa-private-key
+        regex:
+          - '-----BEGIN RSA PRIVATE KEY-----'
+
+      - type: regex
+        name: ssh-ec-private-key
+        regex:
+          - '-----BEGIN EC PRIVATE KEY-----'
+
+      # Other
+      - type: regex
+        name: email-address
+        regex:
+          - '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+
+      - type: regex
+        name: ipv4-address
+        regex:
+          - '\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b'
+
+      - type: regex
+        name: ajax-request
+        regex:
+          - '(?i)(new\s+XMLHttpRequest\(\)|\$\.(get|post|ajax)\()'
+
